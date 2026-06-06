@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Systems & Processes Improvement Dashboard</title>
+<style>
+:root{--navy:#071f3f;--blue:#1f5aa6;--teal:#087b83;--purple:#6f3c97;--green:#3f8f45;--orange:#ef7d22;--gray:#f3f6fa;--line:#d8dee8}
+*{box-sizing:border-box} body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#eef2f7;color:#0b1f3a}
+.header{background:#071f3f;color:white;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}
+.header h1{margin:0;font-size:30px;letter-spacing:.3px} .header p{margin:4px 0 0;color:#b9d6ff;font-style:italic}
+.shell{display:grid;grid-template-columns:260px 1fr 390px;gap:16px;padding:16px}
+.card{background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 16px rgba(7,31,63,.08)}
+.filters{padding:16px} .filters h3,.right h3{margin:0 0 12px}
+.filter-btn{display:block;width:100%;text-align:left;border:1px solid var(--line);background:white;padding:10px 12px;margin:7px 0;border-radius:10px;cursor:pointer;font-weight:600;color:#102a4c}
+.filter-btn.active,.filter-btn:hover{background:#071f3f;color:white}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{padding:16px} .kpi .num{font-size:34px;font-weight:800} .kpi .label{font-size:12px;text-transform:uppercase;color:#5e6a79}
+.main{min-width:0} .viz{padding:18px;overflow:auto}
+.timeline{position:relative;height:520px;min-width:1120px;background:linear-gradient(#fff,#fbfcff);border-radius:12px}
+.axis{position:absolute;left:50px;right:50px;top:250px;height:4px;background:#071f3f}
+.tick{position:absolute;top:243px;width:18px;height:18px;background:#071f3f;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #071f3f}
+.tick-label{position:absolute;top:266px;font-weight:800;font-size:16px;transform:translateX(-35%)}
+.bubble{position:absolute;width:150px;padding:10px;border-radius:13px;background:white;border:2px solid #dfe5ee;box-shadow:0 5px 14px rgba(7,31,63,.12);cursor:pointer;transition:.18s}
+.bubble:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 10px 24px rgba(7,31,63,.22)}
+.bubble.active{border-color:#ef7d22;box-shadow:0 0 0 4px rgba(239,125,34,.18)}
+.bubble .icon{font-size:30px;text-align:center} .bubble .yr{font-size:12px;font-weight:800;text-align:center} .bubble .title{font-size:12px;font-weight:800;text-align:center;margin-top:4px}
+.stem{position:absolute;width:1px;background:#98a4b3}
+.bargrid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+.barrow{display:grid;grid-template-columns:190px 1fr 28px;gap:10px;align-items:center;font-size:13px}
+.bar{height:14px;border-radius:99px;background:#dfe5ee;overflow:hidden} .fill{height:100%;background:#1f5aa6;border-radius:99px}
+.right{padding:18px} .detail-icon{font-size:44px} .detail-title{font-size:24px;font-weight:800;margin:4px 0}
+.chip{display:inline-block;color:white;border-radius:99px;padding:6px 10px;font-weight:700;font-size:12px;margin:6px 0 10px}
+.section{border-top:1px solid var(--line);padding-top:10px;margin-top:10px} .section b{text-transform:uppercase;font-size:11px;color:#5e6a79;letter-spacing:.7px} .section p{margin:4px 0 0;line-height:1.35;font-size:14px}
+.footer-note{margin-top:16px;padding:14px;font-size:13px;line-height:1.35}
+@media(max-width:1100px){.shell{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="header"><div><h1>Systems & Processes Improvement Dashboard</h1><p>Symptoms → Root Causes → Actions → Outcomes</p></div><div style="font-weight:800">Walmart-ready portfolio view</div></div>
+<div class="shell">
+<aside class="card filters">
+<h3>Filters</h3>
+<button class="filter-btn active" onclick="setFilter('All', this)">All Projects</button>
+<button class="filter-btn" onclick="setFilter('Workplace & Training', this)">Workplace & Training</button>
+<button class="filter-btn" onclick="setFilter('Communication & Systems', this)">Communication & Systems</button>
+<button class="filter-btn" onclick="setFilter('Engagement & Access', this)">Engagement & Access</button>
+<button class="filter-btn" onclick="setFilter('Learning & Development', this)">Learning & Development</button>
+<button class="filter-btn" onclick="setFilter('Process Improvement', this)">Process Improvement</button>
+<button class="filter-btn" onclick="setFilter('Innovation & AI', this)">Innovation & AI</button>
+<div class="card footer-note"><b>Dashboard behavior:</b><br>Hover over a bubble to preview. Click a bubble to lock the project detail panel. Use filters to simulate a Power BI/Tableau slicer.</div>
+</aside>
+<main class="main">
+<div class="kpis">
+<div class="card kpi"><div class="num" id="kpiProjects">14</div><div class="label">Visible initiatives</div></div>
+<div class="card kpi"><div class="num">20+</div><div class="label">Years of systems work</div></div>
+<div class="card kpi"><div class="num" id="kpiCats">6</div><div class="label">Capability areas</div></div>
+<div class="card kpi"><div class="num">4</div><div class="label">Diagnostic fields</div></div>
+</div>
+<div class="card viz">
+<div class="timeline" id="timeline"><div class="axis"></div></div>
+<div class="bargrid" id="bars"></div>
+</div>
+</main>
+<aside class="card right" id="detail">
+<h3>Project Detail</h3>
+<div class="detail-icon">🎯</div>
+<div class="detail-title">Select an initiative</div>
+<p>Click any timeline bubble to see symptom, root cause, action, and outcome.</p>
+</aside>
+</div>
+<script>
+const data = [{"year": "2002\u20132009", "start": 2002, "org": "Chevron Texaco / WELLS Language Services", "title": "Safety Training Redesign", "category": "Workplace & Training", "icon": "\u26d1\ufe0f", "symptom": "Low engagement and poor retention due to literacy barriers and text-heavy training.", "root": "Training was not designed for the audience\u2019s literacy levels or learning needs.", "action": "Redesigned training using visuals, demonstrations, and experiential methods.", "outcome": "Improved engagement, comprehension, and training completion.", "impact": "Training completion, engagement, comprehension"}, {"year": "2010\u20132017", "start": 2010, "org": "INVAP", "title": "Communication Standardization Initiative", "category": "Communication & Systems", "icon": "\ud83d\ude80", "symptom": "Inconsistent client-facing documentation and varying communication formats.", "root": "No organization-wide communication standards or documentation governance.", "action": "Created templates, style guides, handbooks, and technical-writing workshops.", "outcome": "Improved consistency, quality, efficiency, and client-facing alignment.", "impact": "Documentation quality, efficiency, alignment"}, {"year": "2013\u20132017", "start": 2013, "org": "Police Academy & Police Department", "title": "Police Communication & 911 Bilingual Initiative", "category": "Communication & Systems", "icon": "\ud83d\udc6e", "symptom": "Outdated communication training and lack of bilingual emergency-response resources.", "root": "Limited training in modern public-service communication and no bilingual 911 scripts.", "action": "Developed communication curriculum, mediation training, and bilingual emergency scripts.", "outcome": "Improved officer communication, bilingual response capability, and community trust.", "impact": "Public service, bilingual response, trust"}, {"year": "2017\u20132019", "start": 2017, "org": "University of Arkansas", "title": "Student Retention & Applied Language Engagement", "category": "Engagement & Access", "icon": "\ud83c\udf93", "symptom": "Limited real-world Spanish practice and low engagement outside class.", "root": "Lack of experiential, low-pressure opportunities to use language in meaningful contexts.", "action": "Implemented Spanish meditation, wellness sessions, accent workshops, and writing workshops.", "outcome": "Increased participation, confidence, retention, and real-world language application.", "impact": "Retention, confidence, participation"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Hispanic Heritage Month Expansion", "category": "Engagement & Access", "icon": "\ud83c\udf0e", "symptom": "Limited cultural visibility and minimal family engagement.", "root": "One-day programming did not create sustained cultural connection or community involvement.", "action": "Expanded from one event to 20+ activities with community partnerships.", "outcome": "Stronger belonging, increased family engagement, and deeper cultural retention.", "impact": "Belonging, engagement, retention"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Parent Engagement & Academic Recovery", "category": "Engagement & Access", "icon": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67", "symptom": "Low family awareness and late interventions affecting student outcomes.", "root": "Limited communication, access barriers, and lack of structured support.", "action": "Built communication systems and academic recovery workflows.", "outcome": "Earlier interventions, improved academic performance, and stronger family partnerships.", "impact": "Academic recovery, family engagement"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "High School-to-University Transition", "category": "Learning & Development", "icon": "\ud83c\udf92", "symptom": "Students lacked tools and guidance to navigate university systems.", "root": "No structured transition education or self-advocacy preparation.", "action": "Created Welcome to Campus videos, professor-meeting tools, and planning resources.", "outcome": "Better college readiness, increased self-advocacy, and smoother transitions.", "impact": "College readiness, self-advocacy"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "New Teacher Onboarding & Just-in-Time Learning", "category": "Workplace & Training", "icon": "\ud83d\udcd8", "symptom": "Information overload and inconsistent onboarding experiences.", "root": "No structured onboarding process or ongoing just-in-time support.", "action": "Designed Orientation Week, compliance modules, templates, and support channels.", "outcome": "Faster onboarding, stronger compliance awareness, and increased teacher confidence.", "impact": "Onboarding, compliance, confidence"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Digital Credit Check & Academic Workflow System", "category": "Process Improvement", "icon": "\ud83d\udcca", "symptom": "Duplicate credit checks, inconsistent tracking, and communication gaps.", "root": "Manual processes and lack of a centralized tracking system.", "action": "Built a real-time Excel-based dashboard with shared access and weekly review cycles.", "outcome": "Eliminated duplication, improved transparency, and enabled proactive student support.", "impact": "Transparency, efficiency, interventions"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Naviance Student Task Optimization", "category": "Process Improvement", "icon": "\u2705", "symptom": "Students overwhelmed by complex tasks with no clear structure.", "root": "Lack of templates, scaffolding, and professional examples.", "action": "Created resume, networking, reference, and career-readiness templates.", "outcome": "Higher task completion, reduced frustration, and improved career readiness.", "impact": "Task completion, career readiness"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Community Service Workflow Simplification", "category": "Process Improvement", "icon": "\ud83d\udcdd", "symptom": "Confusing digital platform caused submission errors and delays.", "root": "Lack of preparation and understanding of required fields.", "action": "Created a simplified paper intake form to scaffold digital submission.", "outcome": "Higher completion rates, less confusion, and stronger graduation tracking.", "impact": "Completion, graduation tracking"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Graduation Speaker Selection Framework", "category": "Learning & Development", "icon": "\ud83c\udfa4", "symptom": "No consistent process for selecting and preparing graduation speakers.", "root": "Lack of criteria, preparation guidance, and speaker support.", "action": "Developed rubric, scoring process, coaching protocols, and speaking supports.", "outcome": "Stronger speaker quality, consistent experience, and student empowerment.", "impact": "Student empowerment, quality, consistency"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "Outback Family Awareness & Accessibility", "category": "Communication & Systems", "icon": "\u25b6\ufe0f", "symptom": "Low awareness of Outback program and available resources.", "root": "No introductory content or family-facing communication materials.", "action": "Created videos and communication workflows explaining services and support pathways.", "outcome": "Increased visibility, better family access, and stronger program engagement.", "impact": "Visibility, access, engagement"}, {"year": "2019\u2013Present", "start": 2019, "org": "Fayetteville Public Schools", "title": "AI-Driven Multilingual Family Communication", "category": "Innovation & AI", "icon": "\ud83c\udf10", "symptom": "Language barriers limited access to critical information for families.", "root": "Traditional translation processes were slow and hard to scale.", "action": "Used AI tools to produce multilingual videos in Arabic, Swahili, French, and German.", "outcome": "Faster communication, greater access, and scalable equity-focused outreach.", "impact": "Equity, multilingual access, speed"}];
+const colors = {"Workplace & Training":"#1f5aa6","Communication & Systems":"#087b83","Engagement & Access":"#6f3c97","Learning & Development":"#8a5a00","Process Improvement":"#3f8f45","Innovation & AI":"#ef7d22"};
+let activeFilter="All", selected=0;
+const xMap = {2002:70,2010:330,2013:500,2017:680,2019:860};
+function getX(d,i){ return d.start===2019 ? 120 + (i-4)*95 : xMap[d.start]; }
+function getY(i){ if(i<5) return [50,50,50,50,50][i]; return 305 + ((i-5)%2)*85; }
+function draw(){
+ const tl=document.getElementById('timeline'); tl.querySelectorAll('.tick,.tick-label,.bubble,.stem').forEach(e=>e.remove());
+ [2002,2010,2013,2017,2019].forEach(y=>{let x=xMap[y]; let t=document.createElement('div');t.className='tick';t.style.left=x+'px';tl.appendChild(t);let l=document.createElement('div');l.className='tick-label';l.style.left=x+'px';l.textContent=y===2019?'2019–Present':y;tl.appendChild(l);});
+ const visible=data.filter(d=>activeFilter==='All'||d.category===activeFilter);
+ data.forEach((d,i)=>{
+   if(!(activeFilter==='All'||d.category===activeFilter)) return;
+   let x=getX(d,i), y=getY(i), down=y<250;
+   let s=document.createElement('div');s.className='stem';s.style.left=(x+75)+'px';s.style.top=(down?y+130:250)+'px';s.style.height=Math.abs(250-(y+130))+'px';tl.appendChild(s);
+   let b=document.createElement('div');b.className='bubble'+(i===selected?' active':'');b.style.left=x+'px';b.style.top=y+'px';b.dataset.idx=i;b.innerHTML=`<div class="yr">${d.year}</div><div class="icon">${d.icon}</div><div class="title">${d.title}</div><div style="height:5px;background:${colors[d.category]};border-radius:8px;margin-top:8px"></div>`;
+   b.onmouseenter=()=>show(i,false); b.onclick=()=>{selected=i;show(i,true);draw();}; tl.appendChild(b);
+ });
+ document.getElementById('kpiProjects').textContent=visible.length;
+ document.getElementById('kpiCats').textContent=new Set(visible.map(d=>d.category)).size;
+ drawBars(visible);
+}
+function drawBars(visible){
+ const counts={}; visible.forEach(d=>counts[d.category]=(counts[d.category]||0)+1);
+ const max=Math.max(1,...Object.values(counts)); const bars=document.getElementById('bars'); bars.innerHTML='';
+ Object.entries(counts).forEach(([k,v])=>{bars.innerHTML+=`<div class="barrow"><b>${k}</b><div class="bar"><div class="fill" style="width:${v/max*100}%;background:${colors[k]}"></div></div><b>${v}</b></div>`;});
+}
+function show(i,lock){
+ const d=data[i], c=colors[d.category]; document.getElementById('detail').innerHTML=`
+ <h3>Project Detail</h3><div class="detail-icon">${d.icon}</div><div class="detail-title">${d.title}</div>
+ <div>${d.year} · ${d.org}</div><span class="chip" style="background:${c}">${d.category}</span>
+ <div class="section"><b>Symptom</b><p>${d.symptom}</p></div>
+ <div class="section"><b>Root Cause</b><p>${d.root}</p></div>
+ <div class="section"><b>Action</b><p>${d.action}</p></div>
+ <div class="section"><b>Outcome</b><p>${d.outcome}</p></div>
+ <div class="section"><b>Impact Field</b><p>${d.impact}</p></div>`; if(lock) selected=i;
+}
+function setFilter(f,el){ activeFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); draw(); }
+draw(); show(0,true);
+</script>
+</body>
+</html>
